@@ -1,10 +1,14 @@
 import 'package:flutter/gestures.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
-
 import 'photo_view_hit_corners.dart';
 
+class KeyListener{
+  bool ctrl = false;
+}
+
 class PhotoViewGestureDetector extends StatelessWidget {
-  const PhotoViewGestureDetector({
+  PhotoViewGestureDetector({
     Key? key,
     this.hitDetector,
     this.onScaleStart,
@@ -30,6 +34,8 @@ class PhotoViewGestureDetector extends StatelessWidget {
   final Widget? child;
 
   final HitTestBehavior? behavior;
+
+  final KeyListener keyListener = KeyListener();
 
   @override
   Widget build(BuildContext context) {
@@ -65,10 +71,45 @@ class PhotoViewGestureDetector extends StatelessWidget {
       },
     );
 
-    return RawGestureDetector(
-      behavior: behavior,
-      child: child,
-      gestures: gestures,
+    return RawKeyboardListener(
+      focusNode: FocusNode(),
+      autofocus: true,
+      onKey: (event){
+        keyListener.ctrl = event.isControlPressed;
+      },
+      child: Listener(
+          onPointerSignal: (event){
+            if (event is PointerScrollEvent && keyListener.ctrl) {
+              onScaleStart?.call(ScaleStartDetails(
+                  focalPoint: event.position,
+                  pointerCount: 2
+              ));
+
+              final double scaleDelta = event.scrollDelta.dy / 800.0;
+
+              final ScaleUpdateDetails scaleUpdateDetails = ScaleUpdateDetails(
+                focalPoint: event.position,
+                localFocalPoint: event.position,
+                scale: 1.0 - scaleDelta,
+                horizontalScale: 1.0 + scaleDelta,
+                verticalScale: 1.0 + scaleDelta,
+                rotation: 0.0,
+                pointerCount: 2,
+              );
+
+              onScaleUpdate?.call(scaleUpdateDetails);
+
+              if (event.scrollDelta.dy == 0.0 && onScaleEnd != null) {
+                onScaleEnd?.call(ScaleEndDetails(pointerCount: 2, velocity: Velocity.zero));
+              }
+            }
+          },
+          child: RawGestureDetector(
+              behavior: behavior,
+              child: child,
+              gestures: gestures
+          )
+      ),
     );
   }
 }
