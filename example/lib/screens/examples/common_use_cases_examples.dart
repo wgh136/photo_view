@@ -170,6 +170,7 @@ class OneTapWrapper extends StatelessWidget {
             Navigator.pop(context);
           },
           child: PhotoView(
+            minScale: 1.0,
             imageProvider: imageProvider,
           ),
         ),

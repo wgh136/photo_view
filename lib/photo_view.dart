@@ -306,7 +306,16 @@ class PhotoView extends StatefulWidget {
         gaplessPlayback = false,
         loadingBuilder = null,
         super(key: key);
-  static bool isCtrlPressed = false;
+  static bool _isCtrlPressed = false;
+
+  static void Function()? onCtrlKey;
+
+  static set isCtrlPressed(bool value){
+    onCtrlKey?.call();
+    _isCtrlPressed = value;
+  }
+
+  static bool get isCtrlPressed => _isCtrlPressed;
 
   /// Given a [imageProvider] it resolves into an zoomable image widget using. It
   /// is required
