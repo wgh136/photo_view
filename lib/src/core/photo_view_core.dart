@@ -150,12 +150,19 @@ class PhotoViewCoreState extends State<PhotoViewCore>
   }
 
   void onScaleUpdate(ScaleUpdateDetails details) {
-    final double newScale = _scaleBefore! * details.scale;
+    double newScale = _scaleBefore! * details.scale;
     final Offset delta = details.focalPoint - _normalizedPosition!;
 
     if (widget.strictScale && (newScale > widget.scaleBoundaries.maxScale ||
         newScale < widget.scaleBoundaries.minScale)) {
-      return;
+      if(newScale > widget.scaleBoundaries.maxScale){
+        newScale = widget.scaleBoundaries.maxScale;
+      }else if(newScale < widget.scaleBoundaries.minScale){
+        newScale = widget.scaleBoundaries.minScale;
+      }
+      if(newScale == scale){
+        return;
+      }
     }
 
     updateScaleStateFromNewScale(newScale);
