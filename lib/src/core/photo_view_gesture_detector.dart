@@ -1,11 +1,9 @@
 import 'package:flutter/gestures.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:photo_view/photo_view_gallery.dart';
+import '../../photo_view.dart';
 import 'photo_view_hit_corners.dart';
 
-class KeyListener{
-  bool ctrl = false;
-}
 
 class PhotoViewGestureDetector extends StatelessWidget {
   PhotoViewGestureDetector({
@@ -34,8 +32,6 @@ class PhotoViewGestureDetector extends StatelessWidget {
   final Widget? child;
 
   final HitTestBehavior? behavior;
-
-  final KeyListener keyListener = KeyListener();
 
   @override
   Widget build(BuildContext context) {
@@ -75,11 +71,12 @@ class PhotoViewGestureDetector extends StatelessWidget {
       focusNode: FocusNode(),
       autofocus: true,
       onKey: (event){
-        keyListener.ctrl = event.isControlPressed;
+        PhotoViewGallery.isCtrlPressed = event.isControlPressed;
+        PhotoView.isCtrlPressed = event.isControlPressed;
       },
       child: Listener(
           onPointerSignal: (event){
-            if (event is PointerScrollEvent && keyListener.ctrl) {
+            if (event is PointerScrollEvent && PhotoViewGallery.isCtrlPressed) {
               onScaleStart?.call(ScaleStartDetails(
                   focalPoint: event.position,
                   pointerCount: 2

@@ -228,6 +228,7 @@ export 'src/utils/photo_view_hero_attributes.dart';
 /// ```
 ///
 class PhotoView extends StatefulWidget {
+
   /// Creates a widget that displays a zoomable image.
   ///
   /// To show an image from the network or from an asset bundle, use their respective
@@ -305,6 +306,7 @@ class PhotoView extends StatefulWidget {
         gaplessPlayback = false,
         loadingBuilder = null,
         super(key: key);
+  static bool isCtrlPressed = false;
 
   /// Given a [imageProvider] it resolves into an zoomable image widget using. It
   /// is required

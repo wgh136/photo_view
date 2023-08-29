@@ -100,6 +100,8 @@ typedef PhotoViewGalleryBuilder = PhotoViewGalleryPageOptions Function(
 /// )
 /// ```
 class PhotoViewGallery extends StatefulWidget {
+  static bool isCtrlPressed = false;
+
   /// Construct a gallery with static items through a list of [PhotoViewGalleryPageOptions].
   const PhotoViewGallery({
     Key? key,
