@@ -264,6 +264,7 @@ class PhotoView extends StatefulWidget {
     this.errorBuilder,
     this.enablePanAlways,
     this.strictScale,
+    this.onScaleUpdate,
   })  : child = null,
         childSize = null,
         super(key: key);
@@ -300,6 +301,7 @@ class PhotoView extends StatefulWidget {
     this.disableGestures,
     this.enablePanAlways,
     this.strictScale,
+    this.onScaleUpdate,
   })  : errorBuilder = null,
         imageProvider = null,
         semanticLabel = null,
@@ -426,6 +428,9 @@ class PhotoView extends StatefulWidget {
   /// Enable strictScale will restrict user scale gesture to the maxScale and minScale values.
   final bool? strictScale;
 
+  /// callback before scale update, return true to avoid scale change
+  final bool Function()? onScaleUpdate;
+
   bool get _isCustomChild {
     return child != null;
   }
@@ -547,6 +552,7 @@ class _PhotoViewState extends State<PhotoView>
                 disableGestures: widget.disableGestures,
                 enablePanAlways: widget.enablePanAlways,
                 strictScale: widget.strictScale,
+                onScaleUpdate: widget.onScaleUpdate,
               )
             : ImageWrapper(
                 imageProvider: widget.imageProvider!,
@@ -575,6 +581,7 @@ class _PhotoViewState extends State<PhotoView>
                 errorBuilder: widget.errorBuilder,
                 enablePanAlways: widget.enablePanAlways,
                 strictScale: widget.strictScale,
+                onScaleUpdate: widget.onScaleUpdate,
               );
       },
     );

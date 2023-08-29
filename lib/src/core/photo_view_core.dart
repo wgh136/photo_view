@@ -43,6 +43,7 @@ class PhotoViewCore extends StatefulWidget {
     required this.disableGestures,
     required this.enablePanAlways,
     required this.strictScale,
+    required this.onScaleUpdate,
   })  : customChild = null,
         super(key: key);
 
@@ -56,6 +57,7 @@ class PhotoViewCore extends StatefulWidget {
     this.onTapDown,
     this.onScaleEnd,
     this.gestureDetectorBehavior,
+    required this.onScaleUpdate,
     required this.controller,
     required this.scaleBoundaries,
     required this.scaleStateCycle,
@@ -88,6 +90,7 @@ class PhotoViewCore extends StatefulWidget {
   final PhotoViewImageTapUpCallback? onTapUp;
   final PhotoViewImageTapDownCallback? onTapDown;
   final PhotoViewImageScaleEndCallback? onScaleEnd;
+  final bool Function()? onScaleUpdate;
 
   final HitTestBehavior? gestureDetectorBehavior;
   final bool tightMode;
@@ -150,6 +153,9 @@ class PhotoViewCoreState extends State<PhotoViewCore>
   }
 
   void onScaleUpdate(ScaleUpdateDetails details) {
+    if(widget.onScaleUpdate?.call() == true){
+      return;
+    }
     double newScale = _scaleBefore! * details.scale;
     final Offset delta = details.focalPoint - _normalizedPosition!;
 
