@@ -186,11 +186,13 @@ class PhotoViewCoreState extends State<PhotoViewCore>
 
   void onScaleEnd(ScaleEndDetails details) {
     final double _scale = scale;
-    final Offset _position = controller.position;
     final double maxScale = scaleBoundaries.maxScale;
     final double minScale = scaleBoundaries.minScale;
 
-    widget.onScaleEnd?.call(context, details, controller.value);
+    if(widget.onScaleEnd?.call(context, details, controller.value) == true){
+     return;
+    }
+    final Offset _position = controller.position;
 
     //animate back to maxScale if gesture exceeded the maxScale specified
     if (_scale > maxScale) {

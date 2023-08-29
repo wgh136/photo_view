@@ -96,9 +96,7 @@ class PhotoViewGestureDetector extends StatelessWidget {
 
               onScaleUpdate?.call(scaleUpdateDetails);
 
-              if (event.scrollDelta.dy == 0.0 && onScaleEnd != null) {
-                onScaleEnd?.call(ScaleEndDetails(pointerCount: 2, velocity: Velocity.zero));
-              }
+              onScaleEnd?.call(ScaleEndDetails(pointerCount: 2, velocity: Velocity.zero));
             }
           },
           child: RawGestureDetector(
