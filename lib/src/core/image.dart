@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
@@ -24,6 +25,8 @@ class PhotoViewImage extends StatefulWidget {
     this.filterQuality = FilterQuality.low,
     this.isAntiAlias = false,
     this.onLoadEnd,
+    this.errorBuilder,
+    this.loadingBuilder,
     Map<String, String>? headers,
     int? cacheWidth,
     int? cacheHeight,
@@ -66,6 +69,10 @@ class PhotoViewImage extends StatefulWidget {
 
   final Future<void> Function(Size imageSize)? onLoadEnd;
 
+  final ImageLoadingBuilder? loadingBuilder;
+
+  final ImageErrorWidgetBuilder? errorBuilder;
+
   @override
   State<PhotoViewImage> createState() => _PhotoViewImageState();
 }
@@ -80,6 +87,7 @@ class _PhotoViewImageState extends State<PhotoViewImage> with WidgetsBindingObse
   bool _wasSynchronouslyLoaded = false;
   late DisposableBuildContext<State<PhotoViewImage>> _scrollAwareContext;
   Object? _lastException;
+  StackTrace? _lastStack;
   ImageStreamCompleterHandle? _completerHandle;
 
   @override
@@ -117,6 +125,12 @@ class _PhotoViewImageState extends State<PhotoViewImage> with WidgetsBindingObse
   @override
   void didUpdateWidget(PhotoViewImage oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (_isListeningToStream &&
+        (widget.loadingBuilder == null) != (oldWidget.loadingBuilder == null)) {
+      final ImageStreamListener oldListener = _getListener();
+      _imageStream!.addListener(_getListener(recreateListener: true));
+      _imageStream!.removeListener(oldListener);
+    }
     if (widget.image != oldWidget.image) {
       _resolveImage();
     }
@@ -156,16 +170,27 @@ class _PhotoViewImageState extends State<PhotoViewImage> with WidgetsBindingObse
 
   ImageStreamListener? _imageStreamListener;
   ImageStreamListener _getListener({bool recreateListener = false}) {
-    if(_imageStreamListener == null || recreateListener) {
+    if (_imageStreamListener == null || recreateListener) {
       _lastException = null;
+      _lastStack = null;
       _imageStreamListener = ImageStreamListener(
         _handleImageFrame,
-        onChunk: _handleImageChunk,
-        onError: (Object error, StackTrace? stackTrace) {
+        onChunk: widget.loadingBuilder == null ? null : _handleImageChunk,
+        onError: widget.errorBuilder != null || kDebugMode
+            ? (Object error, StackTrace? stackTrace) {
           setState(() {
             _lastException = error;
+            _lastStack = stackTrace;
           });
-        },
+          assert(() {
+            if (widget.errorBuilder == null) {
+              // ignore: only_throw_errors, since we're just proxying the error.
+              throw error; // Ensures the error message is printed to the console.
+            }
+            return true;
+          }());
+        }
+            : null,
       );
     }
     return _imageStreamListener!;
@@ -177,15 +202,18 @@ class _PhotoViewImageState extends State<PhotoViewImage> with WidgetsBindingObse
       _replaceImage(info: imageInfo);
       _loadingProgress = null;
       _lastException = null;
+      _lastStack = null;
       _frameNumber = _frameNumber == null ? 0 : _frameNumber! + 1;
       _wasSynchronouslyLoaded = _wasSynchronouslyLoaded | synchronousCall;
     });
   }
 
   void _handleImageChunk(ImageChunkEvent event) {
+    assert(widget.loadingBuilder != null);
     setState(() {
       _loadingProgress = event;
       _lastException = null;
+      _lastStack = null;
     });
   }
 
@@ -255,70 +283,82 @@ class _PhotoViewImageState extends State<PhotoViewImage> with WidgetsBindingObse
     _isListeningToStream = false;
   }
 
+  Widget _debugBuildErrorWidget(BuildContext context, Object error) {
+    return Stack(
+      alignment: Alignment.center,
+      children: <Widget>[
+        const Positioned.fill(
+          child: Placeholder(
+            color: Color(0xCF8D021F),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(4.0),
+          child: FittedBox(
+            child: Text(
+              '$error',
+              textAlign: TextAlign.center,
+              textDirection: TextDirection.ltr,
+              style: const TextStyle(
+                shadows: <Shadow>[
+                  Shadow(blurRadius: 1.0),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_lastException != null) {
-      // display error on screen
-      return SizedBox(
-        height: 300,
-        child: Center(
-          child: Text(_lastException.toString(), style: const TextStyle(color: Colors.white),),
-        ),
-      );
-    }
-
-    if(_imageInfo != null){
-      // build image
-      Widget result = RawImage(
-        // Do not clone the image, because RawImage is a stateless wrapper.
-        // The image will be disposed by this state object when it is not needed
-        // anymore, such as when it is unmounted or when the image stream pushes
-        // a new image.
-        image: _imageInfo?.image,
-        debugImageLabel: _imageInfo?.debugLabel,
-        scale: _imageInfo?.scale ?? 1.0,
-        color: widget.color,
-        opacity: widget.opacity,
-        colorBlendMode: widget.colorBlendMode,
-        fit: widget.fit,
-        alignment: widget.alignment,
-        repeat: widget.repeat,
-        centerSlice: widget.centerSlice,
-        matchTextDirection: widget.matchTextDirection,
-        invertColors: _invertColors,
-        isAntiAlias: widget.isAntiAlias,
-        filterQuality: widget.filterQuality,
-      );
-
-      if (!widget.excludeFromSemantics) {
-        result = Semantics(
-          container: widget.semanticLabel != null,
-          image: true,
-          label: widget.semanticLabel ?? '',
-          child: result,
-        );
+      if (widget.errorBuilder != null) {
+        return widget.errorBuilder!(context, _lastException!, _lastStack);
       }
-      result = SizedBox(
-        child: Center(
-          child: result,
-        ),
-      );
-      return result;
-    }else{
-      // build progress
-      return SizedBox(
-        child: Center(
-          child: CircularProgressIndicator(
-            backgroundColor: Colors.white24,
-            value: (_loadingProgress != null &&
-                _loadingProgress!.expectedTotalBytes!=null &&
-                _loadingProgress!.expectedTotalBytes! != 0)
-                ?_loadingProgress!.cumulativeBytesLoaded / _loadingProgress!.expectedTotalBytes!
-                :0,
-          ),
-        ),
+      if (kDebugMode) {
+        return _debugBuildErrorWidget(context, _lastException!);
+      }
+    }
+
+    Widget result = RawImage(
+      // Do not clone the image, because RawImage is a stateless wrapper.
+      // The image will be disposed by this state object when it is not needed
+      // anymore, such as when it is unmounted or when the image stream pushes
+      // a new image.
+      image: _imageInfo?.image,
+      debugImageLabel: _imageInfo?.debugLabel,
+      width: widget.width,
+      height: widget.height,
+      scale: _imageInfo?.scale ?? 1.0,
+      color: widget.color,
+      opacity: widget.opacity,
+      colorBlendMode: widget.colorBlendMode,
+      fit: widget.fit,
+      alignment: widget.alignment,
+      repeat: widget.repeat,
+      centerSlice: widget.centerSlice,
+      matchTextDirection: widget.matchTextDirection,
+      invertColors: _invertColors,
+      isAntiAlias: widget.isAntiAlias,
+      filterQuality: widget.filterQuality,
+    );
+
+    if (!widget.excludeFromSemantics) {
+      result = Semantics(
+        container: widget.semanticLabel != null,
+        image: true,
+        label: widget.semanticLabel ?? '',
+        child: result,
       );
     }
+
+    if (widget.loadingBuilder != null) {
+      result = widget.loadingBuilder!(context, result, _loadingProgress);
+    }
+
+    return result;
   }
 
   @override
