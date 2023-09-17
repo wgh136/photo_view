@@ -1,15 +1,10 @@
 import 'package:flutter/widgets.dart';
 import 'package:photo_view/photo_view.dart'
-    show
-        PhotoViewScaleState,
-        PhotoViewHeroAttributes,
-        PhotoViewImageTapDownCallback,
-        PhotoViewImageTapUpCallback,
-        PhotoViewImageScaleEndCallback,
-        ScaleStateCycle;
+    show PhotoViewHeroAttributes, PhotoViewImageScaleEndCallback, PhotoViewImageTapDownCallback, PhotoViewImageTapUpCallback, PhotoViewScaleState, ScaleStateCycle;
 import 'package:photo_view/src/controller/photo_view_controller.dart';
 import 'package:photo_view/src/controller/photo_view_controller_delegate.dart';
 import 'package:photo_view/src/controller/photo_view_scalestate_controller.dart';
+import 'package:photo_view/src/core/image.dart';
 import 'package:photo_view/src/core/photo_view_gesture_detector.dart';
 import 'package:photo_view/src/core/photo_view_hit_corners.dart';
 import 'package:photo_view/src/utils/photo_view_utils.dart';
@@ -44,6 +39,7 @@ class PhotoViewCore extends StatefulWidget {
     required this.enablePanAlways,
     required this.strictScale,
     required this.onScaleUpdate,
+    required this.fit,
   })  : customChild = null,
         super(key: key);
 
@@ -71,6 +67,7 @@ class PhotoViewCore extends StatefulWidget {
   })  : imageProvider = null,
         semanticLabel = null,
         gaplessPlayback = false,
+        fit = BoxFit.contain,
         super(key: key);
 
   final Decoration? backgroundDecoration;
@@ -99,6 +96,8 @@ class PhotoViewCore extends StatefulWidget {
   final bool strictScale;
 
   final FilterQuality filterQuality;
+
+  final BoxFit fit;
 
   @override
   State<StatefulWidget> createState() {
@@ -400,16 +399,40 @@ class PhotoViewCoreState extends State<PhotoViewCore>
         : _buildChild();
   }
 
+  /// callback when loading image completely, update scale using [widget.fit] and image's size.
+  Future<void> _onLoadEnd(Size size) async{
+    if(widget.hasCustomChild){
+      return;
+    }
+    final screenSize = MediaQuery.of(context).size;
+    if(widget.fit == BoxFit.fitHeight && (screenSize.width / screenSize.height < size.width / size.height)){
+      var newScale = screenSize.height / (size.height / size.width * screenSize.width);
+      assert(newScale > 1);
+      newScale *= scale;
+      updateScaleStateFromNewScale(newScale);
+      updateMultiple(scale: newScale);
+      await Future.delayed(const Duration(milliseconds: 10));
+    } else if(widget.fit == BoxFit.fitWidth && (screenSize.width / screenSize.height > size.width / size.height)){
+      var newScale = screenSize.width / (size.width / size.height * screenSize.height);
+      assert(newScale > 1);
+      newScale *= scale;
+      updateScaleStateFromNewScale(newScale);
+      updateMultiple(scale: newScale);
+      await Future.delayed(const Duration(milliseconds: 10));
+    }
+  }
+
   Widget _buildChild() {
     return widget.hasCustomChild
         ? widget.customChild!
-        : Image(
+        : PhotoViewImage(
             image: widget.imageProvider!,
             semanticLabel: widget.semanticLabel,
             gaplessPlayback: widget.gaplessPlayback ?? false,
             filterQuality: widget.filterQuality,
             width: scaleBoundaries.childSize.width * scale,
             fit: BoxFit.contain,
+            onLoadEnd: _onLoadEnd,
           );
   }
 }

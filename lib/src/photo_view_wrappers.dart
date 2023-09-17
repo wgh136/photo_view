@@ -35,6 +35,7 @@ class ImageWrapper extends StatefulWidget {
     required this.enablePanAlways,
     required this.strictScale,
     required this.onScaleUpdate,
+    required this.fit,
   }) : super(key: key);
 
   final ImageProvider imageProvider;
@@ -64,6 +65,7 @@ class ImageWrapper extends StatefulWidget {
   final bool? enablePanAlways;
   final bool? strictScale;
   final bool Function()? onScaleUpdate;
+  final BoxFit fit;
 
   @override
   _ImageWrapperState createState() => _ImageWrapperState();
@@ -207,6 +209,7 @@ class _ImageWrapperState extends State<ImageWrapper> {
       disableGestures: widget.disableGestures ?? false,
       enablePanAlways: widget.enablePanAlways ?? false,
       onScaleUpdate: widget.onScaleUpdate,
+      fit: widget.fit,
     );
   }
 

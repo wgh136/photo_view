@@ -265,6 +265,7 @@ class PhotoView extends StatefulWidget {
     this.enablePanAlways,
     this.strictScale,
     this.onScaleUpdate,
+    this.fit = BoxFit.contain,
   })  : child = null,
         childSize = null,
         super(key: key);
@@ -307,6 +308,7 @@ class PhotoView extends StatefulWidget {
         semanticLabel = null,
         gaplessPlayback = false,
         loadingBuilder = null,
+        fit = BoxFit.contain,
         super(key: key);
   static bool _isCtrlPressed = false;
 
@@ -431,12 +433,20 @@ class PhotoView extends StatefulWidget {
   /// callback before scale update, return true to avoid scale change
   final bool Function()? onScaleUpdate;
 
+  /// Decide how to layout a image, if [fit] != contain, scale will be change when image loading complete.
+  ///
+  /// Only accept [BoxFit.fitWidth], [BoxFit.fitHeight], [BoxFit.contain].
+  ///
+  /// Not allowed to use both [initialScale] and [fit].
+  final BoxFit fit;
+
   bool get _isCustomChild {
     return child != null;
   }
 
   @override
   State<StatefulWidget> createState() {
+    assert(initialScale == null || fit == BoxFit.contain);
     return _PhotoViewState();
   }
 }
@@ -582,6 +592,7 @@ class _PhotoViewState extends State<PhotoView>
                 enablePanAlways: widget.enablePanAlways,
                 strictScale: widget.strictScale,
                 onScaleUpdate: widget.onScaleUpdate,
+                fit: widget.fit,
               );
       },
     );
