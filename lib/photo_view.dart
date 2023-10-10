@@ -310,16 +310,12 @@ class PhotoView extends StatefulWidget {
         loadingBuilder = null,
         fit = BoxFit.contain,
         super(key: key);
-  static bool _isCtrlPressed = false;
 
-  static void Function()? onCtrlKey;
-
-  static set isCtrlPressed(bool value){
-    onCtrlKey?.call();
-    _isCtrlPressed = value;
-  }
-
-  static bool get isCtrlPressed => _isCtrlPressed;
+  /// Because of the limitation of flutter, only one widget can listen keyboard event.
+  /// [PhotoView] or [PhotoViewGallery] is listening keyboard.
+  ///
+  /// If you want to listen keyboard event, change this function.
+  static void Function(RawKeyEvent)? onKeyDown;
 
   /// Given a [imageProvider] it resolves into an zoomable image widget using. It
   /// is required

@@ -4,8 +4,8 @@ import 'package:photo_view/photo_view_gallery.dart';
 import '../../photo_view.dart';
 import 'photo_view_hit_corners.dart';
 
-
 class PhotoViewGestureDetector extends StatelessWidget {
+
   PhotoViewGestureDetector({
     Key? key,
     this.hitDetector,
@@ -18,6 +18,8 @@ class PhotoViewGestureDetector extends StatelessWidget {
     this.onTapDown,
     this.behavior,
   }) : super(key: key);
+
+  static bool _isCtrlPressed = false;
 
   final GestureDoubleTapCallback? onDoubleTap;
   final HitCornersDetector? hitDetector;
@@ -71,12 +73,13 @@ class PhotoViewGestureDetector extends StatelessWidget {
       focusNode: FocusNode(),
       autofocus: true,
       onKey: (event){
-        PhotoViewGallery.isCtrlPressed = event.isControlPressed;
-        PhotoView.isCtrlPressed = event.isControlPressed;
+        _isCtrlPressed = event.isControlPressed;
+        PhotoViewGallery.onKeyDown?.call(event);
+        PhotoView.onKeyDown?.call(event);
       },
       child: Listener(
           onPointerSignal: (event){
-            if (event is PointerScrollEvent && PhotoViewGallery.isCtrlPressed) {
+            if (event is PointerScrollEvent && _isCtrlPressed) {
               onScaleStart?.call(ScaleStartDetails(
                   focalPoint: event.position,
                   pointerCount: 2
