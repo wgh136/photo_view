@@ -321,6 +321,8 @@ class PhotoViewCoreState extends State<PhotoViewCore>
       cachedScaleBoundaries = widget.scaleBoundaries;
     }
 
+    controller.onDoubleClick = nextScaleState;
+
     return StreamBuilder(
         stream: controller.outputStateStream,
         initialData: controller.prevValue,

@@ -71,6 +71,8 @@ abstract class PhotoViewControllerBase<T extends PhotoViewControllerValue> {
     double? rotation,
     Offset? rotationFocusPoint,
   });
+
+  void Function()? onDoubleClick;
 }
 
 /// The state value stored and streamed by [PhotoViewController].
@@ -288,4 +290,7 @@ class PhotoViewController
     }
     _valueNotifier.value = newValue;
   }
+
+  @override
+  void Function()? onDoubleClick;
 }
