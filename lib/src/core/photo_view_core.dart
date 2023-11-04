@@ -322,6 +322,7 @@ class PhotoViewCoreState extends State<PhotoViewCore>
     }
 
     controller.onDoubleClick = nextScaleState;
+    controller.animatePosition = animatePosition;
 
     return StreamBuilder(
         stream: controller.outputStateStream,

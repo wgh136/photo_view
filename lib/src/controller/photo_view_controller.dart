@@ -73,6 +73,7 @@ abstract class PhotoViewControllerBase<T extends PhotoViewControllerValue> {
   });
 
   void Function()? onDoubleClick;
+  void Function(Offset from, Offset to)? animatePosition;
 }
 
 /// The state value stored and streamed by [PhotoViewController].
@@ -293,4 +294,7 @@ class PhotoViewController
 
   @override
   void Function()? onDoubleClick;
+
+  @override
+  void Function(Offset from, Offset to)? animatePosition;
 }
