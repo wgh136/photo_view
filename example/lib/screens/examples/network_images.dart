@@ -70,7 +70,7 @@ class NetworkExamples extends StatelessWidget {
                     imageProvider: const NetworkImage(
                       "https://pudim.com.br/sss.jpg",
                     ),
-                    errorBuilder: (_, __, ___) {
+                    errorBuilder: (_, __, ___, ____) {
                       return Container(
                         child: Column(
                           children: [

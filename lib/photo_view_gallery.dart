@@ -15,7 +15,12 @@ import 'package:photo_view/src/controller/photo_view_controller.dart';
 import 'package:photo_view/src/controller/photo_view_scalestate_controller.dart';
 import 'package:photo_view/src/core/photo_view_gesture_detector.dart';
 import 'package:photo_view/src/photo_view_scale_state.dart';
+import 'package:photo_view/src/photo_view_wrappers.dart'
+  show ImageErrorWidgetWithRetryBuilder;
+
 import 'package:photo_view/src/utils/photo_view_hero_attributes.dart';
+
+
 
 /// A type definition for a [Function] that receives a index after a page change in [PhotoViewGallery]
 typedef PhotoViewGalleryPageChangedCallback = void Function(int index);
@@ -433,7 +438,7 @@ class PhotoViewGalleryPageOptions {
   final FilterQuality? filterQuality;
 
   /// Mirror to [PhotoView.errorBuilder]
-  final ImageErrorWidgetBuilder? errorBuilder;
+  final ImageErrorWidgetWithRetryBuilder? errorBuilder;
 
   /// Mirror to [PhotoView.fit]
   final BoxFit fit;

@@ -5,6 +5,9 @@ import 'core/photo_view_core.dart';
 import 'photo_view_default_widgets.dart';
 import 'utils/photo_view_utils.dart';
 
+typedef ImageErrorWidgetWithRetryBuilder = Widget Function(
+    BuildContext context, Object error, StackTrace? stackTrace, void Function() retry);
+
 class ImageWrapper extends StatefulWidget {
   const ImageWrapper({
     Key? key,
@@ -40,7 +43,7 @@ class ImageWrapper extends StatefulWidget {
 
   final ImageProvider imageProvider;
   final LoadingBuilder? loadingBuilder;
-  final ImageErrorWidgetBuilder? errorBuilder;
+  final ImageErrorWidgetWithRetryBuilder? errorBuilder;
   final BoxDecoration backgroundDecoration;
   final String? semanticLabel;
   final bool gaplessPlayback;
@@ -103,6 +106,7 @@ class _ImageWrapperState extends State<ImageWrapper> {
 
   // retrieve image from the provider
   void _resolveImage() {
+    _loading = true;
     final ImageStream newStream = widget.imageProvider.resolve(
       const ImageConfiguration(),
     );
@@ -227,7 +231,7 @@ class _ImageWrapperState extends State<ImageWrapper> {
     BuildContext context,
   ) {
     if (widget.errorBuilder != null) {
-      return widget.errorBuilder!(context, _lastException!, _lastStack);
+      return widget.errorBuilder!(context, _lastException!, _lastStack, _resolveImage);
     }
     return PhotoViewDefaultError(
       decoration: widget.backgroundDecoration,

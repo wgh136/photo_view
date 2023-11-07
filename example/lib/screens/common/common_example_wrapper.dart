@@ -24,7 +24,7 @@ class CommonExampleRouteWrapper extends StatelessWidget {
   final Alignment basePosition;
   final FilterQuality filterQuality;
   final bool? disableGestures;
-  final ImageErrorWidgetBuilder? errorBuilder;
+  final Widget Function(BuildContext, Object, StackTrace?, void Function())? errorBuilder;
 
   @override
   Widget build(BuildContext context) {
