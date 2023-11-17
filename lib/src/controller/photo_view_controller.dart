@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/widgets.dart';
+import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/src/utils/ignorable_change_notifier.dart';
 
 /// The interface in which controllers will be implemented.
@@ -74,6 +75,10 @@ abstract class PhotoViewControllerBase<T extends PhotoViewControllerValue> {
 
   void Function()? onDoubleClick;
   void Function(Offset from, Offset to)? animatePosition;
+  void Function(PhotoViewScaleState? state)? updateState;
+  void Function(double newScale, [Offset? position])? animateScale;
+
+  double? Function()? getInitialScale;
 }
 
 /// The state value stored and streamed by [PhotoViewController].
@@ -297,4 +302,15 @@ class PhotoViewController
 
   @override
   void Function(Offset from, Offset to)? animatePosition;
+
+  @override
+  void Function(PhotoViewScaleState? state)? updateState;
+
+  @override
+  /// Scale to new value with animation.
+  /// This function would not be null after the widget is built.
+  void Function(double newScale, [Offset? position])? animateScale;
+
+  @override
+  double? Function()? getInitialScale;
 }

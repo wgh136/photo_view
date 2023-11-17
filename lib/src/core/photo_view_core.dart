@@ -152,6 +152,10 @@ class PhotoViewCoreState extends State<PhotoViewCore>
   }
 
   void onScaleUpdate(ScaleUpdateDetails details) {
+    if(stateChanged){
+      _scaleBefore = scale;
+      stateChanged = false;
+    }
     if(widget.onScaleUpdate?.call() == true){
       return;
     }
@@ -183,7 +187,10 @@ class PhotoViewCoreState extends State<PhotoViewCore>
     );
   }
 
-  void onScaleEnd(ScaleEndDetails details) {
+  void onScaleEnd(ScaleEndDetails details) async{
+    if(stateChanged){
+      await Future.delayed(const Duration(milliseconds: 200));
+    }
     final double _scale = scale;
     final double maxScale = scaleBoundaries.maxScale;
     final double minScale = scaleBoundaries.minScale;
@@ -235,14 +242,14 @@ class PhotoViewCoreState extends State<PhotoViewCore>
     nextScaleState();
   }
 
-  void animateScale(double from, double to) {
+  Future<void> animateScale(double from, double to) async{
     _scaleAnimation = Tween<double>(
       begin: from,
       end: to,
     ).animate(_scaleAnimationController);
-    _scaleAnimationController
-      ..value = 0.0
-      ..fling(velocity: 0.4);
+    await (_scaleAnimationController
+      ..value = 0.0)
+      .fling(velocity: 0.4);
   }
 
   void animatePosition(Offset from, Offset to) {
@@ -275,6 +282,8 @@ class PhotoViewCoreState extends State<PhotoViewCore>
     }
   }
 
+  late final double? initialScale;
+
   @override
   void initState() {
     super.initState();
@@ -288,6 +297,7 @@ class PhotoViewCoreState extends State<PhotoViewCore>
       ..addStatusListener(onAnimationStatus);
     _positionAnimationController = AnimationController(vsync: this)
       ..addListener(handlePositionAnimate);
+    Future.microtask(() => initialScale = controller.scale);
   }
 
   void animateOnScaleStateUpdate(double prevScale, double nextScale) {
@@ -313,6 +323,8 @@ class PhotoViewCoreState extends State<PhotoViewCore>
     widget.onTapDown?.call(context, details, controller.value);
   }
 
+  bool stateChanged = false;
+
   @override
   Widget build(BuildContext context) {
     // Check if we need a recalc on the scale
@@ -323,6 +335,19 @@ class PhotoViewCoreState extends State<PhotoViewCore>
 
     controller.onDoubleClick = nextScaleState;
     controller.animatePosition = animatePosition;
+    controller.updateState = (state){
+      if(state != null) {
+        scaleStateController.scaleState = state;
+      }
+      stateChanged = true;
+    };
+    controller.animateScale = (value, [newPosition]){
+      if(position != clampPosition(scale: value, position: newPosition)) {
+        animatePosition(position, clampPosition(scale: value, position: newPosition));
+      }
+      animateScale(scale, value);
+    };
+    controller.getInitialScale = () => initialScale;
 
     return StreamBuilder(
         stream: controller.outputStateStream,
