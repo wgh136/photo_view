@@ -163,8 +163,28 @@ class PhotoViewController
 
   @override
   void reset() {
+    if(getInitialScale?.call() != null){
+      initial = PhotoViewControllerValue(
+          position: initial.position,
+          scale: getInitialScale!.call(),
+          rotation: initial.rotation,
+          rotationFocusPoint: initial.rotationFocusPoint
+      );
+    }
     value = initial;
   }
+
+  void resetWithNewBoxFit(BoxFit fit){
+    initial = PhotoViewControllerValue(
+        position: initial.position,
+        scale: getScaleWithFit!.call(fit),
+        rotation: initial.rotation,
+        rotationFocusPoint: initial.rotationFocusPoint
+    );
+    value = initial;
+  }
+
+  double? Function(BoxFit fit)? getScaleWithFit;
 
   void _changeListener() {
     _outputCtrl.sink.add(value);

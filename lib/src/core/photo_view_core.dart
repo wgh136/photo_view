@@ -130,6 +130,9 @@ class PhotoViewCoreState extends State<PhotoViewCore>
 
   late ScaleBoundaries cachedScaleBoundaries = widget.scaleBoundaries;
 
+  late final Size imageSize;
+  late final double imageScale;
+
   void handleScaleAnimation() {
     scale = _scaleAnimation!.value;
   }
@@ -348,6 +351,9 @@ class PhotoViewCoreState extends State<PhotoViewCore>
       animateScale(scale, value);
     };
     controller.getInitialScale = () => initialScale;
+    if(controller is PhotoViewController){
+      (controller as PhotoViewController).getScaleWithFit = getScaleWithFit;
+    }
 
     return StreamBuilder(
         stream: controller.outputStateStream,
@@ -427,8 +433,28 @@ class PhotoViewCoreState extends State<PhotoViewCore>
         : _buildChild();
   }
 
+  double? getScaleWithFit(BoxFit fit){
+    final screenSize = MediaQuery.of(context).size;
+    final size = imageSize;
+    print(fit);
+    if(fit == BoxFit.fitHeight && (screenSize.width / screenSize.height < size.width / size.height)){
+      var newScale = screenSize.height / (size.height / size.width * screenSize.width);
+      assert(newScale > 1);
+      newScale *= imageScale;
+      return newScale;
+    } else if(fit == BoxFit.fitWidth && (screenSize.width / screenSize.height > size.width / size.height)){
+      var newScale = screenSize.width / (size.width / size.height * screenSize.height);
+      assert(newScale > 1);
+      newScale *= imageScale;
+      return newScale;
+    }
+    return null;
+  }
+
   /// callback when loading image completely, update scale using [widget.fit] and image's size.
   Future<void> _onLoadEnd(Size size) async{
+    imageSize = size;
+    imageScale = scale;
     if(widget.hasCustomChild){
       return;
     }
@@ -439,6 +465,13 @@ class PhotoViewCoreState extends State<PhotoViewCore>
       newScale *= scale;
       updateScaleStateFromNewScale(newScale);
       updateMultiple(scale: newScale);
+      if(controller is PhotoViewController){
+        (controller as PhotoViewController).initial = PhotoViewControllerValue(
+            position: controller.position,
+            scale: newScale,
+            rotation: controller.rotation,
+            rotationFocusPoint: controller.rotationFocusPoint);
+      }
       await Future.delayed(const Duration(milliseconds: 10));
     } else if(widget.fit == BoxFit.fitWidth && (screenSize.width / screenSize.height > size.width / size.height)){
       var newScale = screenSize.width / (size.width / size.height * screenSize.height);
@@ -446,6 +479,13 @@ class PhotoViewCoreState extends State<PhotoViewCore>
       newScale *= scale;
       updateScaleStateFromNewScale(newScale);
       updateMultiple(scale: newScale);
+      if(controller is PhotoViewController){
+        (controller as PhotoViewController).initial = PhotoViewControllerValue(
+            position: controller.position,
+            scale: newScale,
+            rotation: controller.rotation,
+            rotationFocusPoint: controller.rotationFocusPoint);
+      }
       await Future.delayed(const Duration(milliseconds: 10));
     }
   }
