@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -67,7 +69,7 @@ class PhotoViewImage extends StatefulWidget {
 
   final bool isAntiAlias;
 
-  final Future<void> Function(Size imageSize)? onLoadEnd;
+  final void Function(Size imageSize)? onLoadEnd;
 
   final ImageLoadingBuilder? loadingBuilder;
 
@@ -196,8 +198,10 @@ class _PhotoViewImageState extends State<PhotoViewImage> with WidgetsBindingObse
     return _imageStreamListener!;
   }
 
-  void _handleImageFrame(ImageInfo imageInfo, bool synchronousCall) async{
-    await widget.onLoadEnd?.call(Size(imageInfo.image.width.toDouble(), imageInfo.image.height.toDouble()));
+  void _handleImageFrame(ImageInfo imageInfo, bool synchronousCall){
+    scheduleMicrotask(() {
+      widget.onLoadEnd?.call(Size(imageInfo.image.width.toDouble(), imageInfo.image.height.toDouble()));
+    });
     setState(() {
       _replaceImage(info: imageInfo);
       _loadingProgress = null;

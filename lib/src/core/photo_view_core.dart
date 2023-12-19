@@ -452,7 +452,7 @@ class PhotoViewCoreState extends State<PhotoViewCore>
   }
 
   /// callback when loading image completely, update scale using [widget.fit] and image's size.
-  Future<void> _onLoadEnd(Size size) async{
+  void _onLoadEnd(Size size){
     imageSize = size;
     imageScale = scale;
     if(widget.hasCustomChild){
@@ -472,7 +472,6 @@ class PhotoViewCoreState extends State<PhotoViewCore>
             rotation: controller.rotation,
             rotationFocusPoint: controller.rotationFocusPoint);
       }
-      await Future.delayed(const Duration(milliseconds: 10));
     } else if(widget.fit == BoxFit.fitWidth && (screenSize.width / screenSize.height > size.width / size.height)){
       var newScale = screenSize.width / (size.width / size.height * screenSize.height);
       assert(newScale > 1);
@@ -486,7 +485,6 @@ class PhotoViewCoreState extends State<PhotoViewCore>
             rotation: controller.rotation,
             rotationFocusPoint: controller.rotationFocusPoint);
       }
-      await Future.delayed(const Duration(milliseconds: 10));
     }
   }
 
