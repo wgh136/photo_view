@@ -155,6 +155,7 @@ class PhotoViewGestureRecognizer extends ScaleGestureRecognizer {
   }
 
   void _computeEvent(PointerEvent event) {
+    print(event);
     if (event is PointerMoveEvent) {
       if (!event.synthesized) {
         _pointerLocations[event.pointer] = event.position;
@@ -162,6 +163,10 @@ class PhotoViewGestureRecognizer extends ScaleGestureRecognizer {
     } else if (event is PointerDownEvent) {
       _pointerLocations[event.pointer] = event.position;
     } else if (event is PointerUpEvent || event is PointerCancelEvent) {
+      _pointerLocations.remove(event.pointer);
+    } else if(event is PointerPanZoomUpdateEvent && event.kind == PointerDeviceKind.trackpad){
+      _pointerLocations[event.pointer] = event.position + event.pan;
+    } else if(event is PointerPanZoomEndEvent){
       _pointerLocations.remove(event.pointer);
     }
 
@@ -178,12 +183,12 @@ class PhotoViewGestureRecognizer extends ScaleGestureRecognizer {
   }
 
   void _decideIfWeAcceptEvent(PointerEvent event) {
-    if (!(event is PointerMoveEvent)) {
+    if (event is! PointerMoveEvent && !(event is PointerPanZoomUpdateEvent && event.kind == PointerDeviceKind.trackpad)) {
       return;
     }
     final move = _initialFocalPoint! - _currentFocalPoint!;
     final bool shouldMove = hitDetector!.shouldMove(move, validateAxis!);
-    if (shouldMove || _pointerLocations.keys.length > 1) {
+    if (shouldMove || (_pointerLocations.keys.length > 1 && event.kind != PointerDeviceKind.trackpad)) {
       acceptGesture(event.pointer);
     }
   }

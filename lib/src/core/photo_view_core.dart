@@ -163,7 +163,7 @@ class PhotoViewCoreState extends State<PhotoViewCore>
       return;
     }
     double newScale = _scaleBefore! * details.scale;
-    final Offset delta = details.focalPoint - _normalizedPosition!;
+    Offset delta = details.focalPoint - _normalizedPosition!;
 
     if (widget.strictScale && (newScale > widget.scaleBoundaries.maxScale ||
         newScale < widget.scaleBoundaries.minScale)) {
@@ -175,6 +175,11 @@ class PhotoViewCoreState extends State<PhotoViewCore>
       if(newScale == scale){
         return;
       }
+    }
+
+    if(details.pointerCount == 1 && newScale != scale){
+      final screenSize = MediaQuery.of(context).size;
+      delta = Offset(screenSize.width/2 - _normalizedPosition!.dx, screenSize.height/2 - _normalizedPosition!.dy);
     }
 
     updateScaleStateFromNewScale(newScale);
