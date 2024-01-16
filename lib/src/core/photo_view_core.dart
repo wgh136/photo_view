@@ -441,7 +441,6 @@ class PhotoViewCoreState extends State<PhotoViewCore>
   double? getScaleWithFit(BoxFit fit){
     final screenSize = MediaQuery.of(context).size;
     final size = imageSize;
-    print(fit);
     if(fit == BoxFit.fitHeight && (screenSize.width / screenSize.height < size.width / size.height)){
       var newScale = screenSize.height / (size.height / size.width * screenSize.width);
       assert(newScale > 1);
