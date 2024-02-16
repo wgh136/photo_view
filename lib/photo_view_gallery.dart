@@ -152,12 +152,6 @@ class PhotoViewGallery extends StatefulWidget {
         assert(builder != null),
         super(key: key);
 
-  /// Because of the limitation of flutter, only one widget can listen keyboard event.
-  /// [PhotoView] or [PhotoViewGallery] is listening keyboard.
-  ///
-  /// If you want to listen keyboard event, change this function.
-  static void Function(RawKeyEvent)? onKeyDown;
-
   /// A list of options to describe the items in the gallery
   final List<PhotoViewGalleryPageOptions>? pageOptions;
 

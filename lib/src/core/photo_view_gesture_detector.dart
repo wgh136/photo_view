@@ -1,7 +1,6 @@
 import 'package:flutter/gestures.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
-import 'package:photo_view/photo_view_gallery.dart';
-import '../../photo_view.dart';
 import 'photo_view_hit_corners.dart';
 
 class PhotoViewGestureDetector extends StatelessWidget {
@@ -19,7 +18,7 @@ class PhotoViewGestureDetector extends StatelessWidget {
     this.behavior,
   }) : super(key: key);
 
-  static bool _isCtrlPressed = false;
+  static bool get _isCtrlPressed => HardwareKeyboard.instance.isControlPressed;
 
   final GestureDoubleTapCallback? onDoubleTap;
   final HitCornersDetector? hitDetector;
@@ -69,45 +68,36 @@ class PhotoViewGestureDetector extends StatelessWidget {
       },
     );
 
-    return RawKeyboardListener(
-      focusNode: FocusNode(),
-      autofocus: true,
-      onKey: (event){
-        _isCtrlPressed = event.isControlPressed;
-        PhotoViewGallery.onKeyDown?.call(event);
-        PhotoView.onKeyDown?.call(event);
-      },
-      child: Listener(
-          onPointerSignal: (event){
-            if (event is PointerScrollEvent && _isCtrlPressed) {
-              onScaleStart?.call(ScaleStartDetails(
-                  focalPoint: event.position,
-                  pointerCount: 2
-              ));
-
-              final double scaleDelta = event.scrollDelta.dy / 800.0;
-
-              final ScaleUpdateDetails scaleUpdateDetails = ScaleUpdateDetails(
+    return Listener(
+        onPointerSignal: (event){
+          if (event is PointerScrollEvent && _isCtrlPressed) {
+            onScaleStart?.call(ScaleStartDetails(
                 focalPoint: event.position,
-                localFocalPoint: event.position,
-                scale: 1.0 - scaleDelta,
-                horizontalScale: 1.0 + scaleDelta,
-                verticalScale: 1.0 + scaleDelta,
-                rotation: 0.0,
-                pointerCount: 2,
-              );
+                pointerCount: 2
+            ));
 
-              onScaleUpdate?.call(scaleUpdateDetails);
+            final double scaleDelta = event.scrollDelta.dy / 800.0;
 
-              onScaleEnd?.call(ScaleEndDetails(pointerCount: 2, velocity: Velocity.zero));
-            }
-          },
-          child: RawGestureDetector(
-              behavior: behavior,
-              child: child,
-              gestures: gestures
-          )
-      ),
+            final ScaleUpdateDetails scaleUpdateDetails = ScaleUpdateDetails(
+              focalPoint: event.position,
+              localFocalPoint: event.position,
+              scale: 1.0 - scaleDelta,
+              horizontalScale: 1.0 + scaleDelta,
+              verticalScale: 1.0 + scaleDelta,
+              rotation: 0.0,
+              pointerCount: 2,
+            );
+
+            onScaleUpdate?.call(scaleUpdateDetails);
+
+            onScaleEnd?.call(ScaleEndDetails(pointerCount: 2, velocity: Velocity.zero));
+          }
+        },
+        child: RawGestureDetector(
+            behavior: behavior,
+            child: child,
+            gestures: gestures
+        )
     );
   }
 }
