@@ -198,10 +198,15 @@ class _PhotoViewImageState extends State<PhotoViewImage> with WidgetsBindingObse
     return _imageStreamListener!;
   }
 
+  bool isOnLoadEndCalled = false;
+
   void _handleImageFrame(ImageInfo imageInfo, bool synchronousCall){
-    scheduleMicrotask(() {
-      widget.onLoadEnd?.call(Size(imageInfo.image.width.toDouble(), imageInfo.image.height.toDouble()));
-    });
+    if(!isOnLoadEndCalled) {
+      scheduleMicrotask(() {
+        isOnLoadEndCalled = true;
+        widget.onLoadEnd?.call(Size(imageInfo.image.width.toDouble(), imageInfo.image.height.toDouble()));
+      });
+    }
     setState(() {
       _replaceImage(info: imageInfo);
       _loadingProgress = null;
