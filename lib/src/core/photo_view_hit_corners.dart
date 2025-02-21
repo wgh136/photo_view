@@ -7,7 +7,7 @@ mixin HitCornersDetector on PhotoViewControllerDelegate {
   HitCorners _hitCornersX() {
     final double childWidth = scaleBoundaries.childSize.width * scale;
     final double screenWidth = scaleBoundaries.outerSize.width;
-    if (screenWidth >= childWidth) {
+    if (screenWidth - childWidth >= -0.1) {
       return const HitCorners(true, true);
     }
     final x = -position.dx;
