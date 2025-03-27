@@ -239,9 +239,10 @@ class PhotoViewCoreState extends State<PhotoViewCore>
     // animate velocity only if there is no scale change and a significant magnitude
     if (_scaleBefore! / _scale == 1.0 && magnitude >= 400.0) {
       final Offset direction = details.velocity.pixelsPerSecond / magnitude;
+      print(details.velocity.pixelsPerSecond);
       animatePosition(
         _position,
-        clampPosition(position: _position + direction * 100.0),
+        clampPosition(position: _position + direction * 200.0),
       );
     }
   }
